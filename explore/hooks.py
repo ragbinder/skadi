@@ -7,10 +7,9 @@ from skadi import demo as d
 
 '''
 This script should plot all the hooks that occured in a game with pudge.  It uses the modifer placed on a hooked
-target as the indicator for a hook.  I import several items from common, which is my location for utility scripts
-and dicts.  it can be found at https://github.com/garth5689/skadi/blob/explore/explore You will also need the folder
-of Hero Icons to plot the targets.  Hooks that do not hit a hero, but do hit a creep are red lines.  Hooks that miss
-completely, or kill a hero on impact are not implemented yet.  These are features for a future version.
+target as the indicator for a hook.  You will need the folder of Hero Icons to plot the targets.  Hooks that 
+do not hit a hero, but do hit a creep are red lines.  Hooks that miss completely, or kill a hero on impact are 
+not implemented yet.  These are features for a future version.
 '''
 
 def main():
