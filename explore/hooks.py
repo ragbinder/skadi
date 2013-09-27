@@ -2,7 +2,6 @@ import os
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import savefig
 import matplotlib.offsetbox as ob
-
 from common import HERO_ICONS_PATH, MINIMAP_PATH, HEROID, DEMO_FILE_PATH, worldcoordfromcell, imagecoordfromworld
 from skadi import demo as d
 

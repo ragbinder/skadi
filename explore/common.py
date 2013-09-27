@@ -1,5 +1,7 @@
 import os
 import sys
+import io
+from collections import defaultdict
 
 PWD = os.path.dirname(__file__)
 ROOT = os.path.abspath(os.path.join(PWD, '..'))
@@ -102,3 +104,34 @@ PLAYER_COLORS = [(0.15625, 0.4140625, 0.8984375),
  (0.359375, 0.76953125, 0.875),
  (0.0, 0.46484375, 0.12109375),
  (0.58203125, 0.375, 0.0)]
+
+def wiki_scrape(demo):
+    DT_Set = defaultdict()
+
+    stream = demo.stream(tick=5000)
+
+    for i in range(len(stream.world.by_dt.keys())):
+        DT = str(stream.world.by_dt.keys()[i])
+        DT_Set[DT] = set()
+        __, state = stream.world.find_by_dt(DT)
+        for j in range(len(state.keys())):
+            prop = str(state.keys()[j])
+            DT_Set[DT].add(prop)
+
+    return DT_Set
+
+
+def wiki_create(DT_Set):
+    base_path = '/Users/Andrew/Documents/Computer/Workspace/SkadiWiki'
+
+    with io.open(os.path.join(base_path, 'Home.md'), 'ab+') as homefile:
+        DTKeys = DT_Set.keys().sort()
+        for i in DTKeys:
+            DT_Name = str(DTKeys[i])
+            DT_FileName = ''.join([str(DTKeys[i]), '.md'])
+            homefile.write(''.join(['* [', DT_Name, '](https://github.com/garth5689/skadi/wiki/', DT_Name, ') \n']))
+            with io.open(os.path.join(base_path, DT_FileName), 'ab+') as dtfile:
+                dtfile.write(''.join(['### Full list of ', DT_Name, ' properties \n\n']))
+                PropKeys = DT_Set[DT_Set.keys()[i]].sort()
+                for __ in range(len(PropKeys)):
+                    dtfile.write(''.join(['* `', str(PropKeys.pop()).replace("u'", "'"), '`: \n']))
