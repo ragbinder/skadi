@@ -35,20 +35,18 @@ def scan(prologue, demo_io, tick=None):
 
     try:
       p, m = next(iter_bootstrap)
-      item = (p, d_io.parse(p.kind, p.compressed, m))
 
       while True:
         if p.kind == pb_d.DEM_FullPacket:
-          full_packets.append(item)
+          full_packets.append((p, m))
           remaining_packets = []
         else:
-          remaining_packets.append(item)
+          remaining_packets.append((p, m))
 
         if p.tick >= tick:
           break
 
         p, m = next(iter_bootstrap)
-        item = (p, d_io.parse(p.kind, p.compressed, m))
     except StopIteration:
       raise EOFError()
 
@@ -61,9 +59,11 @@ def reconstitute(full_packets, class_bits, recv_tables, string_tables):
 
   st_mn = st['ModifierNames']
   st_am = st['ActiveModifiers']
-  m = e_m.construct(st_mn, baseline=st_am)
+  mod = e_m.construct(st_mn, baseline=st_am)
 
-  for _, fp in full_packets:
+  for p, m in full_packets:
+    fp = d_io.parse(p.kind, p.compressed, m)
+
     for table in fp.string_table.tables:
       assert not table.items_clientside
 
@@ -75,7 +75,9 @@ def reconstitute(full_packets, class_bits, recv_tables, string_tables):
         [m.note(e) for e in entries]
 
   if full_packets:
-    _, fp = full_packets[-1]
+    p, m = full_packets[-1]
+    fp = d_io.parse(p.kind, p.compressed, m)
+
     packet = ie_packet.construct(p_io.construct(fp.packet.data))
 
     _, pe = packet.svc_packet_entities
@@ -93,7 +95,7 @@ def reconstitute(full_packets, class_bits, recv_tables, string_tables):
 
       w.create(cls, index, serial, state)
 
-  return w, m, st
+  return w, mod, st
 
 
 def construct(*args):
@@ -112,7 +114,8 @@ class Stream(object):
     self.string_tables = sttabs
     self.sparse = sparse
 
-    for p, pb in rem:
+    for p, m in rem:
+      pb = d_io.parse(p.kind, p.compressed, m)
       self.advance(p.tick, pb)
 
   def __iter__(self):
