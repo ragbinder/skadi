@@ -1,21 +1,23 @@
 import os
 import sys
-import io
-from collections import defaultdict
+
 
 PWD = os.path.dirname(__file__)
 ROOT = os.path.abspath(os.path.join(PWD, '..'))
 sys.path.append(ROOT)
-
 DEMO_FILE_PATH = os.path.abspath(os.path.join(ROOT, 'tests/data/test.dem'))
 
 MAX_COORD_INTEGER = 16384
 
+
 def worldcoordfromcell(entity):
     cellwidth = 1 << entity[('DT_BaseEntity', 'm_cellbits')]
-    x = ((entity[('DT_DOTA_BaseNPC', 'm_cellX')] * cellwidth) - MAX_COORD_INTEGER) + entity[('DT_DOTA_BaseNPC', 'm_vecOrigin')][0]
-    y = ((entity[('DT_DOTA_BaseNPC', 'm_cellY')] * cellwidth) - MAX_COORD_INTEGER) + entity[('DT_DOTA_BaseNPC', 'm_vecOrigin')][1]
+    x = ((entity[('DT_DOTA_BaseNPC', 'm_cellX')] * cellwidth) - MAX_COORD_INTEGER) + \
+          entity[('DT_DOTA_BaseNPC', 'm_vecOrigin')][0]
+    y = ((entity[('DT_DOTA_BaseNPC', 'm_cellY')] * cellwidth) - MAX_COORD_INTEGER) + \
+          entity[('DT_DOTA_BaseNPC', 'm_vecOrigin')][1]
     return x, y
+
 
 def imagecoordfromworld(x, y):
     return (8576.0 + x) * 0.0626 + -18.1885, (8192.0 - y) * 0.0630 + -11.6453
@@ -94,44 +96,13 @@ MINIMAP_PATH = '/Users/Andrew/Documents/Computer/Workspace/Skadi/explore/minimap
 
 HERO_ICONS_PATH = '/Users/Andrew/Documents/Computer/Workspace/Skadi/explore/Hero_Icons'
 
-PLAYER_COLORS = [(0.15625, 0.4140625, 0.8984375),
- (0.36328125, 0.8984375, 0.67578125),
- (0.67578125, 0.0, 0.67578125),
- (0.859375, 0.84765625, 0.0390625),
- (0.8984375, 0.3828125, 0.0),
- (0.8984375, 0.4765625, 0.6875),
- (0.5703125, 0.640625, 0.25),
- (0.359375, 0.76953125, 0.875),
- (0.0, 0.46484375, 0.12109375),
- (0.58203125, 0.375, 0.0)]
-
-def wiki_scrape(demo):
-    DT_Set = defaultdict()
-
-    stream = demo.stream(tick=5000)
-
-    for i in range(len(stream.world.by_dt.keys())):
-        DT = str(stream.world.by_dt.keys()[i])
-        DT_Set[DT] = set()
-        __, state = stream.world.find_by_dt(DT)
-        for j in range(len(state.keys())):
-            prop = str(state.keys()[j])
-            DT_Set[DT].add(prop)
-
-    return DT_Set
-
-
-def wiki_create(DT_Set):
-    base_path = '/Users/Andrew/Documents/Computer/Workspace/SkadiWiki'
-
-    with io.open(os.path.join(base_path, 'Home.md'), 'ab+') as homefile:
-        DTKeys = DT_Set.keys().sort()
-        for i in DTKeys:
-            DT_Name = str(DTKeys[i])
-            DT_FileName = ''.join([str(DTKeys[i]), '.md'])
-            homefile.write(''.join(['* [', DT_Name, '](https://github.com/garth5689/skadi/wiki/', DT_Name, ') \n']))
-            with io.open(os.path.join(base_path, DT_FileName), 'ab+') as dtfile:
-                dtfile.write(''.join(['### Full list of ', DT_Name, ' properties \n\n']))
-                PropKeys = DT_Set[DT_Set.keys()[i]].sort()
-                for __ in range(len(PropKeys)):
-                    dtfile.write(''.join(['* `', str(PropKeys.pop()).replace("u'", "'"), '`: \n']))
+PLAYER_COLORS = [(0.1563, 0.4141, 0.8984),
+                 (0.3633, 0.8984, 0.6758),
+                 (0.6758, 0.0000, 0.6758),
+                 (0.8594, 0.8477, 0.0391),
+                 (0.8984, 0.3828, 0.0000),
+                 (0.8984, 0.4766, 0.6875),
+                 (0.5703, 0.6406, 0.2500),
+                 (0.3594, 0.7695, 0.8750),
+                 (0.0000, 0.4648, 0.1211),
+                 (0.5820, 0.3750, 0.0000)]
