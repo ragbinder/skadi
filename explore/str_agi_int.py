@@ -2,13 +2,19 @@ import matplotlib.pyplot as plt
 from common import DEMO_FILE_PATH
 from skadi import demo as d
 
+'''
+This script plots the attributes of a single hero over the entire game.
+'''
 
 def stragiint():
     game = d.construct(DEMO_FILE_PATH)
 
+    # strength, agi, intel are the base stats from levels
     strength = []
     agi = []
     intel = []
+    
+    # the totals are the base + any attributes added by items or buffs
     str_tot = []
     agi_tot = []
     int_tot = []
@@ -20,6 +26,8 @@ def stragiint():
         rules_ehandle, rules_state = world.find_by_dt('DT_DOTAGamerulesProxy')
 
         if rules_state[('DT_DOTAGamerulesProxy', 'DT_DOTAGamerules.m_flGameStartTime')] != 0.0:
+            
+            # This is the selected hero.  For each tick, grab all the attributes and add them to the appropriate list
             hero = world.find(players_state[('DT_DOTA_PlayerResource', 'm_hSelectedHero.0001')])
             agi.append(hero[('DT_DOTA_BaseNPC_Hero', 'm_flAgility')])
             strength.append(hero[('DT_DOTA_BaseNPC_Hero', 'm_flStrength')])

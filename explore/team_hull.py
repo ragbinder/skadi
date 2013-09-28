@@ -8,9 +8,21 @@ import matplotlib.patches as patches
 from common import MINIMAP_PATH, HERO_ICONS_PATH, HEROID, DEMO_FILE_PATH, worldcoordfromcell, imagecoordfromworld
 from skadi import demo as d
 
+'''
+This script creates a convex hull between all of the alive heros on the radiant/dire sides and plots it.  As it is
+currently written, this script will calculate all the data, and then when the plotting method is called, it will draw
+and show each frame one-by-one.  I could not find a suitable way to animate the frames, including saving them and then
+animating them.  If you can find a way, please let me know and submit a pull request to 
+https://github.com/garth5689/skadi/tree/explore  I use the scipy.spatial module, and several extra hull functions
+from http://tomswitzer.net/2010/03/graham-scan/
+'''
+
+
 TURN_LEFT, TURN_RIGHT, TURN_NONE = (1, -1, 0)
 
 
+# This code allows us to take the simplex points from the convex hull and order them to draw the polygon
+# Code from http://tomswitzer.net/2010/03/graham-scan/
 def turn(p, q, r):
     return cmp((q[0] - p[0]) * (r[1] - p[1]) - (r[0] - p[0]) * (q[1] - p[1]), 0)
 
@@ -36,7 +48,9 @@ def main():
 
     hero_handles = []
     player_nums = [str(i).zfill(4) for i in range(10)]
-
+    
+    # These will be lists of lists.  the length of each will be the number of frame generated, and each
+    # will refer to a tick.
     unit_ids = []
     rad_pos = []
     dire_pos = []
@@ -47,7 +61,8 @@ def main():
         rules_ehandle, rules_state = world.find_by_dt('DT_DOTAGamerulesProxy')
 
         if rules_state[('DT_DOTAGamerulesProxy', 'DT_DOTAGamerules.m_flGameStartTime')] != 0.0:
-
+            
+            # The first time through this loop, generate a list of the hero handles present in the game.
             if not hero_handles:
                 for player_num in player_nums:
                     hero_handles.append(
@@ -60,6 +75,8 @@ def main():
             for num, hero_handle in enumerate(hero_handles):
                 hero = world.find(hero_handle)
                 if hero[('DT_DOTA_BaseNPC', 'm_lifeState')] == 0:
+                    # Add each unit ID to the temp ID list, and each coords to the correct team's coords.  This 
+                    # keeps the radiant and dire separate so we can draw two polygons.
                     if num <= 4:
                         dx, dy = worldcoordfromcell(hero)
                         x, y = imagecoordfromworld(dx, dy)
@@ -81,6 +98,8 @@ def main():
 
 def hull_plotting(unit_ids, rad_pos, dire_pos):
     for index in range(len(rad_pos)):
+        
+        # set up the initial plot, add the map, maximize axes, etc.
         fig, ax = plt.subplots(figsize=(10.25, 10.25))
         map_img = plt.imread(MINIMAP_PATH)
         ax.set_position([0, 0, 1, 1])
@@ -88,7 +107,8 @@ def hull_plotting(unit_ids, rad_pos, dire_pos):
         fig.patch.set_facecolor('black')
         ax.patch.set_facecolor('black')
         ax.axis((0, 1024, 1024, 0))
-
+        
+        # Plot all the hero icons in their coordinates
         for num, hero in enumerate(unit_ids[index]):
             hero_img_name = HEROID[hero]
             hero_img = plt.imread(
@@ -102,7 +122,9 @@ def hull_plotting(unit_ids, rad_pos, dire_pos):
             hero_ab.patch.set_alpha(0)
             hero_art = ax.add_artist(hero_ab)
             hero_art.set(zorder=5)
-
+        
+        # For each of the teams, if there are more than 2 heros, plot the polygon for the convex hull.
+        # If there are only two heros, draw a line between them.  else, don't draw any lines, etc.
         if len(rad_pos[index]) >= 3:
             rad_hull = spatial.ConvexHull(rad_pos[index])
             rad_points = []
