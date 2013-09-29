@@ -38,7 +38,7 @@ def scan(prologue, demo_io, tick=None):
 
       while True:
         if p.kind == pb_d.DEM_FullPacket:
-          full_packets.append((p, m))
+          full_packets.append(m)
           remaining_packets = []
         else:
           remaining_packets.append((p, m))
@@ -61,8 +61,8 @@ def reconstitute(full_packets, class_bits, recv_tables, string_tables):
   st_am = st['ActiveModifiers']
   mod = e_m.construct(st_mn, baseline=st_am)
 
-  for p, m in full_packets:
-    fp = d_io.parse(p.kind, p.compressed, m)
+  for m in full_packets:
+    fp = d_io.parse(pb_d.DEM_FullPacket, True, m)
 
     for table in fp.string_table.tables:
       assert not table.items_clientside
@@ -71,12 +71,12 @@ def reconstitute(full_packets, class_bits, recv_tables, string_tables):
       st[table.table_name].update_all(entries)
 
       if table.table_name == 'ActiveModifiers':
-        m.reset()
-        [m.note(e) for e in entries]
+        mod.reset()
+        [mod.note(e) for e in entries]
 
   if full_packets:
-    p, m = full_packets[-1]
-    fp = d_io.parse(p.kind, p.compressed, m)
+    m = full_packets[-1]
+    fp = d_io.parse(pb_d.DEM_FullPacket, True, m)
 
     packet = ie_packet.construct(p_io.construct(fp.packet.data))
 
